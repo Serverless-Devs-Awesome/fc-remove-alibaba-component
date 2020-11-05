@@ -11,6 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "@alicloud/fc2": "^2.2.2",
-    "@serverless-devs/s-core": "0.0.22"
+    "@alicloud/pop-core": "^1.7.10",
+    "@serverless-devs/s-core": "0.0.22",
+    "lodash": "^4.17.20"
   }
 }
