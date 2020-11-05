@@ -87,6 +87,10 @@ class Client {
     })
   }
 
+  /**
+   * 抛出错误，用作数据统计
+   * @param {*} e Error 对象或者 { name, message }
+   */
   throwError (e) {
     new ServerlessError(e);
   }

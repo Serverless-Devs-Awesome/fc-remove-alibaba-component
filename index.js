@@ -1,7 +1,7 @@
 const { Component } = require('@serverless-devs/s-core');
 const getHelp = require('./utils/help');
 
-const Tag = require('./utils/resource/tag');
+const FcResource = require('./utils/resource/fc');
 
 class FcComponent extends Component {
   constructor() {
@@ -32,30 +32,35 @@ class FcComponent extends Component {
       isRemoveAll = true;
     }
 
+    const fcResource = new FcResource(credentials, region)
+
     // 解绑标签
     if (removeType === 'tags' || isRemoveAll) {
       // TODO 指定删除标签
-      const tag = new Tag(credentials, region)
       const serviceArn = 'services/' + serviceName
-      await tag.remove(serviceArn, parameters)
+      await fcResource.removeTags(serviceArn, parameters)
     }
 
     // if (removeType === 'domain' || isRemoveAll) {
     //   await this.domain(inputs, true)
     // }
 
-    // // 单独删除触发器
-    // if (removeType === 'trigger' || isRemoveAll) {
-    //   // TODO 指定删除特定触发器
-    //   const fcTrigger = new Trigger(credentials, region)
-    //   await fcTrigger.remove(serviceName, functionName, parameters)
-    // }
+    // 单独删除触发器
+    if (removeType === 'trigger' || isRemoveAll) {
+      // TODO 指定删除特定触发器
+      await fcResource.removeTrigger(serviceName, functionName, parameters);
+    }
 
-    // // 单独删除函数
-    // if (removeType === 'function' || isRemoveAll) {
-    //   const fcFunction = new FcFunction(credentials, region)
-    //   await fcFunction.remove(serviceName, functionName)
-    // }
+    // 单独删除函数
+    if (removeType === 'function' || isRemoveAll) {
+      await fcResource.removeFunction(serviceName, functionName);
+    }
+
+    // 单独删除服务
+    // TODO 服务是全局的，当前组件如何判断是否要删除服务？
+    if (removeType === 'service' || isRemoveAll) {
+      await fcResource.removeService(serviceName)
+    }
 
 
     // const fcRemove = new Remove(commands, parameters, { credentials, region, serviceProp });
