@@ -2,7 +2,7 @@
 const _ = require('lodash');
 const Client = require('../client');
 const Logs = require('./log');
-const Nas = require('./log');
+const Nas = require('./nas');
 
 const FUN_NAS_FUNCTION = 'fun-nas-function';
 
@@ -21,6 +21,25 @@ class FcResource extends Client {
     }
   }
 
+  async getCustomAutoDomainName (serviceName, functionName) {
+    const customDomains = await this.fcClient.listCustomDomains();
+    const tmpDomains = customDomains.data.customDomains;
+
+    console.log(tmpDomains);
+    for (const tmpDomain of tmpDomains) {
+      const { routes } = tmpDomain.routeConfig;
+      const tmpDomainName = tmpDomain.domainName;
+      if (!routes) { continue }
+
+      for (const route of routes) {
+        if (serviceName === route.serviceName && functionName === route.functionName) {
+          return tmpDomainName;
+        }
+      }
+    }
+    return false;
+  }
+
   async removeNasFunctionIfExists (serviceName) {
     const existsNasFunction = await this.functionExists(serviceName, FUN_NAS_FUNCTION);
     if (!existsNasFunction) { return };
@@ -36,6 +55,40 @@ class FcResource extends Client {
       this.logger.success(`Remove function for nas successfuly: ${FUN_NAS_FUNCTION}`)
     } catch (e) {
       this.logger.warn(`Unable to remove function: ${FUN_NAS_FUNCTION}`)
+    }
+  }
+
+  async deleteDomain (domainName, serverName, functionName) {
+    if (domainName.toLocaleUpperCase() === 'AUTO') {
+      domainName = await this.getCustomAutoDomainName(serverName, functionName);
+      if (!domainName) {
+        return;
+      }
+    }
+    this.logger.info(`Deleting domain: ${domainName}`)
+    try {
+      await this.fcClient.deleteCustomDomain(domainName)
+    } catch (e) {
+      if (e.code !== 'DomainNameNotFound') {
+        this.throwError(e);
+      }
+    }
+    this.logger.success(`Delete domain successfully: ${domainName}`);
+  }
+
+  /**
+   * 
+   * @param {*} domains 自定义域名配置
+   * @param {*} serviceName 
+   * @param {*} functionName 
+   * @param {*} onlyDomainName 仅删除指定域名
+   */
+  async removeDomain (domains, serviceName, functionName, onlyDomainName) {
+    if (onlyDomainName) {
+      return await this.deleteDomain(onlyDomainName, serviceName, functionName);
+    }
+    for (const { Domain } of domains) {
+      await this.deleteDomain(Domain, serviceName, functionName);
     }
   }
 
@@ -167,7 +220,7 @@ class FcResource extends Client {
     // handle nas
     if (nasConfig) {
       const nas = new Nas(this.credentials, this.region);
-      return await nas.removeNas(nasConfig, forceDelete);
+      await nas.removeNas(nasConfig, forceDelete);
     }
 
     // handle sls

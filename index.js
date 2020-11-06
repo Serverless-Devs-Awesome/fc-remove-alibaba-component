@@ -2,6 +2,7 @@ const { Component } = require('@serverless-devs/s-core');
 const getHelp = require('./utils/help');
 
 const FcResource = require('./utils/resource/fc');
+const _ = require('lodash');
 
 class FcComponent extends Component {
   constructor() {
@@ -41,9 +42,22 @@ class FcComponent extends Component {
       await fcResource.removeTags(serviceArn, parameters)
     }
 
-    // if (removeType === 'domain' || isRemoveAll) {
-    //   await this.domain(inputs, true)
-    // }
+    if (removeType === 'domain' || isRemoveAll) {
+      let triggers = properties.Function.Triggers;
+      if (_.isArray(triggers)) {
+        triggers = triggers.filter(trigger => trigger.Type === 'HTTP' && trigger.Parameters && trigger.Parameters.Domains);
+        const onlyDomainName = parameters.d || parameters.domain;
+        
+        for (const trigger of triggers) {
+          await fcResource.removeDomain(
+            trigger.Parameters.Domains,
+            serviceName,
+            functionName,
+            onlyDomainName
+          )
+        }
+      }
+    }
 
     // 单独删除触发器
     if (removeType === 'trigger' || isRemoveAll) {

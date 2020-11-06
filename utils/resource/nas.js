@@ -4,7 +4,6 @@ const getUuid = require('uuid-by-string');
 
 const Client = require('../client');
 const inquirer = require('inquirer')
-const { promiseRetry } = require('../utils');
 
 const requestOption = {
   method: 'POST'
@@ -49,7 +48,7 @@ class Nas extends Client {
     return vpc;
   }
 
-  async describeVSwitchAttributes (vpcClient, region, vswitchId) {
+  async describeVSwitchAttributes (vpcClient) {
     return await vpcClient.request('DescribeVSwitchAttributes', params, requestOption)
   }
 
@@ -73,11 +72,11 @@ class Nas extends Client {
     return null;
   }
 
-  findDefaultVpcAndSwitch () {
+  async findDefaultVpcAndSwitch () {
     const funDefaultVpc = await this.findVpc(defaultVpcName)
     if (funDefaultVpc) {
       const vswitchIds = funDefaultVpc.VSwitchIds.VSwitchId;
-      const vswitchId = await vswitch.findVswitchExistByName(vswitchIds, defaultVSwitchName)
+      const vswitchId = await this.findVswitchExistByName(vswitchIds, defaultVSwitchName)
       return {
         vpcId: funDefaultVpc.VpcId,
         vswitchId
@@ -151,7 +150,7 @@ class Nas extends Client {
         }
       }
     }
-  
+
     this.logger.info(`Found auto generated nas file system: ${fileSystemId}, mount target: ${mountTarget}.`);
     if (!forceDelete) {
       const { deleteNas } = await inquirer.prompt([{
@@ -173,11 +172,11 @@ class Nas extends Client {
     }
   }
 
-  removeNas () {
+  async removeNas (nasConfig, forceDelete) {
     const { vpcId, vswitchId } = await this.findDefaultVpcAndSwitch(this.credentials, this.region)
     if (vpcId && vswitchId) {
       try {
-        await this.nas.deleteDefaultNas(vpcId, vswitchId, nasConfig, forceDelete)
+        await this.deleteDefaultNas(vpcId, vswitchId, nasConfig, forceDelete)
       } catch (e) {
         this.logger.warn(`Failed to delete auto generated nas: ${e}`)
       }
