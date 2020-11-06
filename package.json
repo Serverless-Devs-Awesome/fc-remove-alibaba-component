@@ -11,8 +11,12 @@
   "license": "ISC",
   "dependencies": {
     "@alicloud/fc2": "^2.2.2",
+    "@alicloud/log": "^1.2.1",
     "@alicloud/pop-core": "^1.7.10",
     "@serverless-devs/s-core": "0.0.22",
-    "lodash": "^4.17.20"
+    "inquirer": "^7.3.3",
+    "lodash": "^4.17.20",
+    "promise-retry": "^2.0.1",
+    "uuid-by-string": "^3.0.2"
   }
 }

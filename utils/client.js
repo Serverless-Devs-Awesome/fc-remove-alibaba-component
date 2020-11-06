@@ -2,6 +2,7 @@
 
 const FC = require('@alicloud/fc2');
 const Pop = require('@alicloud/pop-core');
+const Log = require('@alicloud/log');
 const Logger = require('./logger');
 const ServerlessError = require('./error');
 
@@ -84,6 +85,14 @@ class Client {
       accessKeySecret: this.accessKeySecret,
       endpoint: `https://cr.${this.region}.aliyuncs.com`,
       apiVersion: '2016-06-07'
+    })
+  }
+
+  buildLogClient () {
+    return new Log({
+      region: this.region,
+      accessKeyId: this.accessKeyID,
+      accessKeySecret: this.accessKeySecret
     })
   }
 
