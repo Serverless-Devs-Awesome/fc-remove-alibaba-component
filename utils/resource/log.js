@@ -7,7 +7,7 @@ const inquirer = require('inquirer')
 const { promiseRetry } = require('../utils');
 
 
-class FcResource extends Client {
+class Log extends Client {
   constructor (credentials, region) {
     super(credentials, region);
     this.logClient = this.buildLogClient();
@@ -45,7 +45,7 @@ class FcResource extends Client {
     return projectExist;
   }
 
-  async deleteDefaultSlsProject ({ project, logStore }, forceDelete) {
+  async deleteDefaultSlsProject ({ project }, forceDelete) {
     const defaultProjectExist = await this.slsProjectExist(project);
     if (!defaultProjectExist) { return };
 
@@ -68,4 +68,4 @@ class FcResource extends Client {
   }
 }
 
-module.exports = FcResource;
+module.exports = Log;
