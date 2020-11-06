@@ -25,7 +25,6 @@ class FcResource extends Client {
     const customDomains = await this.fcClient.listCustomDomains();
     const tmpDomains = customDomains.data.customDomains;
 
-    console.log(tmpDomains);
     for (const tmpDomain of tmpDomains) {
       const { routes } = tmpDomain.routeConfig;
       const tmpDomainName = tmpDomain.domainName;
